@@ -1,4 +1,3 @@
-// import axios from "axios";
 import fetchJsonp from "fetch-jsonp";
 
 /**
@@ -13,7 +12,6 @@ export const getPlayerList = async (server, type, id) => {
   const data = await res.json();
 
   if (data[0].url.startsWith("@")) {
-    // eslint-disable-next-line no-unused-vars
     const [handle, jsonpCallback, jsonpCallbackFunction, url] = data[0].url.split("@").slice(1);
     const jsonpData = await fetchJsonp(url).then((res) => res.json());
     const domain = (
@@ -22,18 +20,18 @@ export const getPlayerList = async (server, type, id) => {
     ).replace("http://", "https://");
 
     return data.map((v, i) => ({
-      name: v.name || v.title,
+      title: v.name || v.title,
       artist: v.artist || v.author,
-      url: domain + jsonpData.req_0.data.midurlinfo[i].purl,
-      cover: v.cover || v.pic,
+      src: domain + jsonpData.req_0.data.midurlinfo[i].purl,
+      pic: v.pic,
       lrc: v.lrc,
     }));
   } else {
     return data.map((v) => ({
-      name: v.name || v.title,
+      title: v.name || v.title,
       artist: v.artist || v.author,
-      url: v.url,
-      cover: v.cover || v.pic,
+      src: v.url,
+      pic: v.pic,
       lrc: v.lrc,
     }));
   }
@@ -53,23 +51,27 @@ export const getHitokoto = async () => {
  * 天气
  */
 
+const apiKey = 'b5ead205705615c795e89f9b46a8c62c'; // 高德 API Key
+
 // 获取高德地理位置信息
-export const getAdcode = async (key) => {
-  const res = await fetch(`https://restapi.amap.com/v3/ip?key=${key}`);
-  return await res.json();
+export const getAdcode = async () => {
+  const res = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+  const data = await res.json();
+  return data;
 };
 
 // 获取高德地理天气信息
-export const getWeather = async (key, city) => {
+export const getWeather = async (city) => {
   const res = await fetch(
-    `https://restapi.amap.com/v3/weather/weatherInfo?key=${key}&city=${city}`,
+    `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${city}`
   );
-  return await res.json();
+  const data = await res.json();
+  return data;
 };
 
 // 获取教书先生天气 API
-// https://api.oioweb.cn/doc/weather/GetWeather
 export const getOtherWeather = async () => {
   const res = await fetch("https://api.oioweb.cn/api/weather/GetWeather");
-  return await res.json();
+  const data = await res.json();
+  return data;
 };
