@@ -44,31 +44,84 @@ export const getPlayerList = async (server, type, id) => {
 
 // 获取一言数据
 export const getHitokoto = async () => {
-  const res = await fetch("https://v1.hitokoto.cn");
-  return await res.json();
+  try {
+    const res = await fetch("https://v1.hitokoto.cn");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching hitokoto data:", error);
+    return null;
+  }
 };
 
 /**
  * 天气
  */
 
+const apiKey = 'b5ead205705615c795e89f9b46a8c62c';
+
 // 获取高德地理位置信息
-export const getAdcode = async (b5ead205705615c795e89f9b46a8c62c) => {
-  const res = await fetch(`https://restapi.amap.com/v3/ip?key=${b5ead205705615c795e89f9b46a8c62c}`);
-  return await res.json();
+export const getAdcode = async () => {
+  try {
+    const res = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+    const data = await res.json();
+    if (data && data.adcode) {
+      return data.adcode;
+    } else {
+      throw new Error('Adcode not found in the response.');
+    }
+  } catch (error) {
+    console.error('Error fetching Adcode:', error);
+    return null;
+  }
 };
 
 // 获取高德地理天气信息
-export const getWeather = async (b5ead205705615c795e89f9b46a8c62c, city) => {
-  const res = await fetch(
-    `https://restapi.amap.com/v3/weather/weatherInfo?key=${b5ead205705615c795e89f9b46a8c62c}&city=${city}`,
-  );
-  return await res.json();
+export const getWeather = async (city) => {
+  try {
+    const res = await fetch(
+      `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${city}`
+    );
+    const data = await res.json();
+    if (data && data.status === "1") {
+      return data;
+    } else {
+      throw new Error('Weather data not found or API call failed.');
+    }
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    return null;
+  }
 };
 
 // 获取教书先生天气 API
-// https://api.oioweb.cn/doc/weather/GetWeather
 export const getOtherWeather = async () => {
-  const res = await fetch("https://api.oioweb.cn/api/weather/GetWeather");
-  return await res.json();
+  try {
+    const res = await fetch("https://api.oioweb.cn/api/weather/GetWeather");
+    const data = await res.json();
+    if (data && data.success) {
+      return data;
+    } else {
+      throw new Error('Other weather data not found or API call failed.');
+    }
+  } catch (error) {
+    console.error('Error fetching other weather data:', error);
+    return null;
+  }
 };
+
+// 示例使用
+(async () => {
+  const adcode = await getAdcode();
+  console.log('Adcode:', adcode);
+
+  if (adcode) {
+    const weather = await getWeather(adcode);
+    console.log('Weather:', weather);
+  } else {
+    console.log('Failed to get Adcode, cannot fetch weather data.');
+  }
+
+  const otherWeather = await getOtherWeather();
+  console.log('Other Weather:', otherWeather);
+})();
