@@ -52,23 +52,53 @@ export const getHitokoto = async () => {
  * 天气
  */
 
+const fetch = require('node-fetch');
+
 // 获取高德地理位置信息
-export const getAdcode = async (b5ead205705615c795e89f9b46a8c62c) => {
-  const res = await fetch(`https://restapi.amap.com/v3/ip?key=${b5ead205705615c795e89f9b46a8c62c}`);
-  return await res.json();
+const getAdcode = async (apiKey) => {
+  try {
+    const res = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+    const data = await res.json();
+    return data.adcode;  // 返回城市编码
+  } catch (error) {
+    console.error('Error fetching Adcode:', error);
+  }
 };
 
 // 获取高德地理天气信息
-export const getWeather = async (b5ead205705615c795e89f9b46a8c62c, city) => {
-  const res = await fetch(
-    `https://restapi.amap.com/v3/weather/weatherInfo?key=${b5ead205705615c795e89f9b46a8c62c}&city=${city}`,
-  );
-  return await res.json();
+const getWeather = async (apiKey, city) => {
+  try {
+    const res = await fetch(
+      `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${city}`
+    );
+    const data = await res.json();
+    return data;  // 返回天气信息
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+  }
 };
 
 // 获取教书先生天气 API
-// https://api.oioweb.cn/doc/weather/GetWeather
-export const getOtherWeather = async () => {
-  const res = await fetch("https://api.oioweb.cn/api/weather/GetWeather");
-  return await res.json();
+const getOtherWeather = async () => {
+  try {
+    const res = await fetch("https://api.oioweb.cn/api/weather/GetWeather");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching other weather data:', error);
+  }
 };
+
+// 示例使用
+const apiKey = 'your_amap_api_key';  // 替换为有效的 API Key
+
+(async () => {
+  const adcode = await getAdcode(apiKey);
+  console.log('Adcode:', adcode);
+
+  const weather = await getWeather(apiKey, adcode);
+  console.log('Weather:', weather);
+
+  const otherWeather = await getOtherWeather();
+  console.log('Other Weather:', otherWeather);
+})();
