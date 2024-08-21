@@ -1,127 +1,92 @@
-// import axios from "axios";
-import fetchJsonp from "fetch-jsonp";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+</head>
+<body>
+    <h1>Weather Information</h1>
+    <div id="weather-info"></div>
 
-/**
- * 音乐播放器
- */
+    <script>
+        const apiKey = 'b5ead205705615c795e89f9b46a8c62c'; // 高德 API Key
 
-// 获取音乐播放列表
-export const getPlayerList = async (server, type, id) => {
-  const res = await fetch(
-    `${import.meta.env.VITE_SONG_API}?server=${server}&type=${type}&id=${id}`,
-  );
-  const data = await res.json();
+        /**
+         * 获取高德地理位置信息
+         * @returns {Promise<string|null>} 返回城市编码（adcode）
+         */
+        const getAdcode = async () => {
+            try {
+                const response = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+                const data = await response.json();
 
-  if (data[0].url.startsWith("@")) {
-    const [handle, jsonpCallback, jsonpCallbackFunction, url] = data[0].url.split("@").slice(1);
-    const jsonpData = await fetchJsonp(url).then((res) => res.json());
-    const domain = (
-      jsonpData.req_0.data.sip.find((i) => !i.startsWith("http://ws")) ||
-      jsonpData.req_0.data.sip[0]
-    ).replace("http://", "https://");
+                if (data && data.adcode) {
+                    return data.adcode; // 返回城市编码
+                } else {
+                    throw new Error('Adcode not found in the response.');
+                }
+            } catch (error) {
+                console.error('Error fetching Adcode:', error);
+                return null;
+            }
+        };
 
-    return data.map((v, i) => ({
-      title: v.name || v.title,
-      artist: v.artist || v.author,
-      src: domain + jsonpData.req_0.data.midurlinfo[i].purl,
-      pic: v.pic,
-      lrc: v.lrc,
-    }));
-  } else {
-    return data.map((v) => ({
-      title: v.name || v.title,
-      artist: v.artist || v.author,
-      src: v.url,
-      pic: v.pic,
-      lrc: v.lrc,
-    }));
-  }
-};
+        /**
+         * 获取指定城市的天气信息
+         * @param {string} city - 城市编码
+         * @returns {Promise<Object|null>} 返回天气信息
+         */
+        const getWeather = async (city) => {
+            try {
+                const response = await fetch(
+                    `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${city}`
+                );
+                const data = await response.json();
 
-/**
- * 一言
- */
+                if (data.status === '1' && data.lives && data.lives.length > 0) {
+                    // 返回天气信息
+                    return {
+                        city: data.lives[0].city,
+                        weather: data.lives[0].weather,
+                        temperature: data.lives[0].temperature,
+                        humidity: data.lives[0].humidity,
+                        wind: data.lives[0].winddirection + ' ' + data.lives[0].windspeed + 'km/h',
+                    };
+                } else {
+                    throw new Error('Weather data not found or API call failed.');
+                }
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                return null;
+            }
+        };
 
-// 获取一言数据
-export const getHitokoto = async () => {
-  try {
-    const res = await fetch("https://v1.hitokoto.cn");
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching hitokoto data:", error);
-    return null;
-  }
-};
+        /**
+         * 更新页面上的天气信息
+         */
+        const updateWeatherInfo = async () => {
+            const adcode = await getAdcode();
+            if (adcode) {
+                const weather = await getWeather(adcode);
+                if (weather) {
+                    document.getElementById('weather-info').innerHTML = `
+                        <p>City: ${weather.city}</p>
+                        <p>Weather: ${weather.weather}</p>
+                        <p>Temperature: ${weather.temperature}°C</p>
+                        <p>Humidity: ${weather.humidity}%</p>
+                        <p>Wind: ${weather.wind}</p>
+                    `;
+                } else {
+                    document.getElementById('weather-info').innerHTML = 'Failed to retrieve weather information.';
+                }
+            } else {
+                document.getElementById('weather-info').innerHTML = 'Failed to retrieve Adcode.';
+            }
+        };
 
-/**
- * 天气
- */
-
-const apiKey = 'b5ead205705615c795e89f9b46a8c62c';
-
-// 获取高德地理位置信息
-export const getAdcode = async () => {
-  try {
-    const res = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
-    const data = await res.json();
-    if (data && data.adcode) {
-      return data.adcode;
-    } else {
-      throw new Error('Adcode not found in the response.');
-    }
-  } catch (error) {
-    console.error('Error fetching Adcode:', error);
-    return null;
-  }
-};
-
-// 获取高德地理天气信息
-export const getWeather = async (city) => {
-  try {
-    const res = await fetch(
-      `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${city}`
-    );
-    const data = await res.json();
-    if (data && data.status === "1") {
-      return data;
-    } else {
-      throw new Error('Weather data not found or API call failed.');
-    }
-  } catch (error) {
-    console.error('Error fetching weather data:', error);
-    return null;
-  }
-};
-
-// 获取教书先生天气 API
-export const getOtherWeather = async () => {
-  try {
-    const res = await fetch("https://api.oioweb.cn/api/weather/GetWeather");
-    const data = await res.json();
-    if (data && data.success) {
-      return data;
-    } else {
-      throw new Error('Other weather data not found or API call failed.');
-    }
-  } catch (error) {
-    console.error('Error fetching other weather data:', error);
-    return null;
-  }
-};
-
-// 示例使用
-(async () => {
-  const adcode = await getAdcode();
-  console.log('Adcode:', adcode);
-
-  if (adcode) {
-    const weather = await getWeather(adcode);
-    console.log('Weather:', weather);
-  } else {
-    console.log('Failed to get Adcode, cannot fetch weather data.');
-  }
-
-  const otherWeather = await getOtherWeather();
-  console.log('Other Weather:', otherWeather);
-})();
+        // 执行更新天气信息的函数
+        updateWeatherInfo();
+    </script>
+</body>
+</html>
