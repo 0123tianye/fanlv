@@ -7,16 +7,16 @@
   {
     "icon": "Cloud",
     "name": "网盘",
-    "link": "https://link3.cc/3116559843"
+    "link": "https://link3.cc/fanlv"
   },
   {
     "icon": "CompactDisc",
-    "name": "音范丝电影下载",
+    "name": "音范丝",
     "link": "https://www.yinfans.me/"
   },
   {
     "icon": "Compass",
-    "name": "BT之家番剧下载",
+    "name": "BT之家",
     "link": "https://www.1lou.icu/"
   },
   {
@@ -29,9 +29,4 @@
     "name": "今日热榜",
     "link": "https://hot.imsyy.top/"
   },
-  {
-    "icon": "LaptopCode",
-    "name": "站点监测",
-    "link": "https://status.imsyy.top/"
-  }
 ]
